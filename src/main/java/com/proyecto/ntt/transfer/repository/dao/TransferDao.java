@@ -6,13 +6,13 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 @Data
 @Document(collection="transfers")
 public class TransferDao {
     @Id
-    @NotNull
-    private Integer id;
+    private Integer id= UUID.randomUUID().hashCode();
     @NotNull
     private Integer numeroCuentaCliente;
     @NotNull

@@ -8,7 +8,7 @@ import java.time.LocalDate;
 
 @Data
 public class Transfer {
-    @NotNull
+
     private Integer id;
     @NotNull
     private Integer numeroCuentaCliente;

@@ -4,6 +4,7 @@ import com.proyecto.ntt.transfer.controller.dto.Transfer;
 import com.proyecto.ntt.transfer.repository.TransferRepository;
 import com.proyecto.ntt.transfer.repository.dao.TransferDao;
 import com.proyecto.ntt.transfer.service.TransferService;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
@@ -13,13 +14,11 @@ import java.util.stream.StreamSupport;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor
 public class TransferServiceImpl implements TransferService {
 
     private final TransferRepository repository;
 
-    public TransferServiceImpl(TransferRepository repository) {
-        this.repository = repository;
-    }
 
     @Override
     public List<Transfer> transferList() {
@@ -39,7 +38,19 @@ public class TransferServiceImpl implements TransferService {
 
     @Override
     public Mono<Transfer> createTransfer(Transfer transfer) {
-        return null;
+        var transferDao = new TransferDao();
+        transferDao.setFecha(transfer.getFecha());
+        transferDao.setMonto(transfer.getMonto());
+        transferDao.setNumeroCuentaDestino(transfer.getNumeroCuentaDestino());
+        transferDao.setNumeroCuentaCliente(transfer.getNumeroCuentaCliente());
+        var transferRegistrada = repository.save(transferDao);
+        Transfer transferdto = new Transfer();
+        transferdto.setId(transferRegistrada.getId());
+        transferdto.setFecha(transferRegistrada.getFecha());
+        transferdto.setMonto(transferRegistrada.getMonto());
+        transferdto.setNumeroCuentaCliente(transferRegistrada.getNumeroCuentaCliente());
+        transferdto.setNumeroCuentaDestino(transferRegistrada.getNumeroCuentaDestino());
+        return Mono.just(transferdto);
     }
 
     @Override
