@@ -24,7 +24,7 @@ public class TransferServiceImpl implements TransferService {
     @Override
     public List<Transfer> transferList() {
         return StreamSupport.stream(repository.findAll().spliterator(), false)
-                .map( transferDao -> {
+                .map(transferDao -> {
                     Transfer transfer = new Transfer();
                     transfer.setId(transferDao.getId());
                     transfer.setFecha(transferDao.getFecha());
@@ -45,7 +45,7 @@ public class TransferServiceImpl implements TransferService {
     @Override
     public Transfer getTransfer(Integer id) {
         var transferFound = repository.findById(id);
-        if (transferFound.isPresent()){
+        if (transferFound.isPresent()) {
             var transfer = new Transfer();
             var transferDao = transferFound.get();
             transfer.setId(transferDao.getId());
@@ -54,7 +54,8 @@ public class TransferServiceImpl implements TransferService {
             transfer.setNumeroCuentaCliente(transferDao.getNumeroCuentaCliente());
             transfer.setNumeroCuentaDestino(transferDao.getNumeroCuentaDestino());
             return transfer;
-        }else {
-        return null;
+        } else {
+            return null;
         }
     }
+}
