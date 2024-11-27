@@ -4,9 +4,11 @@ import com.proyecto.ntt.transfer.controller.dto.Transfer;
 import com.proyecto.ntt.transfer.repository.TransferRepository;
 import com.proyecto.ntt.transfer.repository.dao.TransferDao;
 import com.proyecto.ntt.transfer.service.TransferService;
+import com.proyecto.ntt.transfer.service.dto.Movimiento;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -14,10 +16,16 @@ import java.util.stream.StreamSupport;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
 public class TransferServiceImpl implements TransferService {
+    public TransferServiceImpl(TransferRepository repository, WebClient.Builder webClientBuilder){
+        this.repository = repository;
+        this.webClient = webClientBuilder.baseUrl("http://localhost:8081").build();
+
+    }
 
     private final TransferRepository repository;
+    private final WebClient webClient;
+
 
 
     @Override
@@ -38,6 +46,20 @@ public class TransferServiceImpl implements TransferService {
 
     @Override
     public Mono<Transfer> createTransfer(Transfer transfer) {
+        var deposit= new Movimiento();
+        var withdrawal = new Movimiento();
+        deposit.setDescripcion("deposito");
+        deposit.setNumero_cuenta(transfer.getNumeroCuentaDestino());
+        deposit.setFecha(transfer.getFecha());
+        deposit.setMonto(transfer.getMonto());
+        withdrawal.setDescripcion("retiro");
+        withdrawal.setNumero_cuenta(transfer.getNumeroCuentaCliente());
+        withdrawal.setFecha(transfer.getFecha());
+        withdrawal.setMonto(transfer.getMonto());
+
+        var calldeposit = registrarMovimiento(deposit);
+        var callwithdrawal = registrarMovimiento(withdrawal);
+
         var transferDao = new TransferDao();
         transferDao.setFecha(transfer.getFecha());
         transferDao.setMonto(transfer.getMonto());
@@ -51,6 +73,7 @@ public class TransferServiceImpl implements TransferService {
         transferdto.setNumeroCuentaCliente(transferRegistrada.getNumeroCuentaCliente());
         transferdto.setNumeroCuentaDestino(transferRegistrada.getNumeroCuentaDestino());
         return Mono.just(transferdto);
+
     }
 
     @Override
@@ -69,4 +92,14 @@ public class TransferServiceImpl implements TransferService {
             return null;
         }
     }
+
+    public Mono<Movimiento> registrarMovimiento(Movimiento movimiento) {
+        return webClient.post()
+                .uri("/movimientos") // La URL base ya está configurada
+                .body(Mono.just(movimiento), Movimiento.class) // Cuerpo de la solicitud
+                .retrieve() // Procesa la respuesta
+                .bodyToMono(Movimiento.class); // Convierte la respuesta al tipo Movimiento
+    }
 }
+
+
