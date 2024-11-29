@@ -57,11 +57,11 @@ public class TransferServiceImpl implements TransferService {
         withdrawal.setFecha(transfer.getFecha());
         withdrawal.setMonto(transfer.getMonto()*-1);
 
-        var calldeposit = registrarMovimiento(deposit);
+        var callwithdrawal = registrarMovimiento(withdrawal);
 
-        return calldeposit.flatMap(movimiento -> {
-            var callwithdrawal = registrarMovimiento(withdrawal);
-            return callwithdrawal;
+        return callwithdrawal.flatMap(movimiento -> {
+            var calldeposit = registrarMovimiento(deposit);
+            return calldeposit;
         }).map(movimiento -> {
             var transferDao = new TransferDao();
             transferDao.setFecha(transfer.getFecha());
