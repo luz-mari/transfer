@@ -55,25 +55,28 @@ public class TransferServiceImpl implements TransferService {
         withdrawal.setDescripcion("retiro");
         withdrawal.setNumero_cuenta(transfer.getNumeroCuentaCliente());
         withdrawal.setFecha(transfer.getFecha());
-        withdrawal.setMonto(transfer.getMonto());
+        withdrawal.setMonto(transfer.getMonto()*-1);
 
         var calldeposit = registrarMovimiento(deposit);
-        var callwithdrawal = registrarMovimiento(withdrawal);
 
-        var transferDao = new TransferDao();
-        transferDao.setFecha(transfer.getFecha());
-        transferDao.setMonto(transfer.getMonto());
-        transferDao.setNumeroCuentaDestino(transfer.getNumeroCuentaDestino());
-        transferDao.setNumeroCuentaCliente(transfer.getNumeroCuentaCliente());
-        var transferRegistrada = repository.save(transferDao);
-        Transfer transferdto = new Transfer();
-        transferdto.setId(transferRegistrada.getId());
-        transferdto.setFecha(transferRegistrada.getFecha());
-        transferdto.setMonto(transferRegistrada.getMonto());
-        transferdto.setNumeroCuentaCliente(transferRegistrada.getNumeroCuentaCliente());
-        transferdto.setNumeroCuentaDestino(transferRegistrada.getNumeroCuentaDestino());
-        return Mono.just(transferdto);
-
+        return calldeposit.flatMap(movimiento -> {
+            var callwithdrawal = registrarMovimiento(withdrawal);
+            return callwithdrawal;
+        }).map(movimiento -> {
+            var transferDao = new TransferDao();
+            transferDao.setFecha(transfer.getFecha());
+            transferDao.setMonto(transfer.getMonto());
+            transferDao.setNumeroCuentaDestino(transfer.getNumeroCuentaDestino());
+            transferDao.setNumeroCuentaCliente(transfer.getNumeroCuentaCliente());
+            var transferRegistrada = repository.save(transferDao);
+            Transfer transferdto = new Transfer();
+            transferdto.setId(transferRegistrada.getId());
+            transferdto.setFecha(transferRegistrada.getFecha());
+            transferdto.setMonto(transferRegistrada.getMonto());
+            transferdto.setNumeroCuentaCliente(transferRegistrada.getNumeroCuentaCliente());
+            transferdto.setNumeroCuentaDestino(transferRegistrada.getNumeroCuentaDestino());
+            return (transferdto);
+        });
     }
 
     @Override
