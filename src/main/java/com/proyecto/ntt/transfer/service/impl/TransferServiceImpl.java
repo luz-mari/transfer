@@ -17,9 +17,9 @@ import java.util.stream.StreamSupport;
 @Slf4j
 @Service
 public class TransferServiceImpl implements TransferService {
-    public TransferServiceImpl(TransferRepository repository, WebClient.Builder webClientBuilder){
+    public TransferServiceImpl(TransferRepository repository, WebClient webClient){
         this.repository = repository;
-        this.webClient = webClientBuilder.baseUrl("http://localhost:8081").build();
+        this.webClient = webClient;
 
     }
 
